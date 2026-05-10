@@ -1,4 +1,4 @@
-class ServerError extends Error {
+export class ServerError extends Error {
   statusCode: number;
 
   constructor(message: string, statusCode: number) {
@@ -7,4 +7,6 @@ class ServerError extends Error {
   }
 }
 
-export { ServerError };
+export interface MailerType {
+  sendVerificationMail(email: string, code: number): Promise<void>;
+}

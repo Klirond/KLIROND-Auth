@@ -3,13 +3,10 @@ import wrapper from "../middlewares/asyncWrapper.middleware.ts";
 import crypto from "crypto";
 
 import IdModel from "../model/id.ts";
+import Mailer from "../config/mail.ts";
 
 const register = wrapper(
-  async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response> => {
+  async (req: Request, res: Response): Promise<Response> => {
     const {
       username,
       email,
@@ -34,6 +31,8 @@ const register = wrapper(
     const newUser = new IdModel(user);
 
     await newUser.save();
+
+    await Mailer.sendVerificationMail(email, code);
 
     return res.status(201).json({
       status: 201,
