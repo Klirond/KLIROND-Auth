@@ -9,7 +9,7 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next): Response => {
     const statusCode: number = err.statusCode;
     const message: string = err.message;
 
-    logger.error(`[${err.statusCode}] ${err.message}`);
+    logger.error({ status: err.statusCode, message: err.message });
 
     return res.status(statusCode).json({
       status: statusCode,
@@ -28,7 +28,7 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next): Response => {
     });
   }
 
-  logger.error("An error occured");
+  logger.error({ message: "An error occured", errorMessage: err });
 
   return res.status(500).json({
     status: 500,
