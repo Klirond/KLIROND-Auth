@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.use("/auth", AuthRouter);
-app.use(errorHandler());
+app.use(errorHandler);
 
 async function start(): Promise<void> {
   const PORT: number = Number(process.env.PORT) ?? 5000;

@@ -1,4 +1,4 @@
-import { Response, Request, NextFunction } from "express";
+import type { Response, Request, NextFunction } from "express";
 
 const wrapper: Function = (
   f: Function,

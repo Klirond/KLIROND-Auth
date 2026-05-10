@@ -1,28 +1,21 @@
-import { Response, Request, NextFunction } from "express";
+import type { Response, Request, NextFunction } from "express";
 
-class ServerError extends Error {
-  status: number;
+import { ServerError } from "../global/types.ts";
 
-  constructor(message: string, status: number) {
-    super(message);
-    this.status = status;
-  }
-}
-
-const errorHandler: Function = (
-  err: Error | unknown,
+const errorHandler = (
+  err: unknown,
   res: Response,
   _req: Request,
   _next: NextFunction,
-): void => {
+): Response => {
   if (err instanceof ServerError) {
-    const status: number = err.status;
+    const statusCode: number = err.statusCode;
     const message: string = err.message;
 
-    console.log(`${err.status} |> ${err.message}`);
+    console.log(`${err.statusCode} |> ${err.message}`);
 
-    res.status(status).json({
-      status: status,
+    res.status(statusCode).json({
+      status: statusCode,
       message: message,
     });
   }
@@ -40,7 +33,7 @@ const errorHandler: Function = (
 
   console.log("Error |> An error occured");
 
-  res.status(500).json({
+  return res.status(500).json({
     status: 500,
     message: "An error occured",
   });
