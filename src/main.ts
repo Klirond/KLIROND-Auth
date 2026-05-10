@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 
 import connect from "./config/db.ts";
+import errorHandler from "./middlewares/error.middleware.ts";
 
 const app: Express = express();
 
@@ -12,6 +13,8 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+
+app.use(errorHandler());
 
 async function start(): Promise<void> {
   const PORT: number = Number(process.env.PORT) ?? 5000;
