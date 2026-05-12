@@ -106,4 +106,4 @@ const verifyAccount = wrapper(
   },
 );
 
-export { register };
+export { register, verifyAccount };
