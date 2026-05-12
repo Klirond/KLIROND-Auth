@@ -1,7 +1,7 @@
 import type { Response, Request } from "express";
 import wrapper from "../middlewares/asyncWrapper.middleware.ts";
 import crypto from "crypto";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 import IdModel from "../model/id.ts";
 import Mailer from "../config/mail.ts";
@@ -21,19 +21,22 @@ const register = wrapper(
       password: propriety;
     } = req.body;
 
-    const result = AccountZodObject.safeParse({username, email, password});
+    const result = AccountZodObject.safeParse({ username, email, password });
 
     if (!result.success) {
       logger.error(result.error);
 
       return res.status(400).json({
         status: 400,
-        message: result.error
-      })
+        message: result.error,
+      });
     }
 
     const salt: number = 10;
-    const hashedPassword: Promise<string> = await bcrypt.hash(password !== undefined ? password : "", salt);
+    const hashedPassword: Promise<string> & void = await bcrypt.hash(
+      password !== undefined ? password : "",
+      salt,
+    );
 
     const code: number = crypto.randomInt(100000, 999999);
     const expiry: Date = new Date(Date.now() + 10 * 60 * 1000);
