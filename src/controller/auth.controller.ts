@@ -3,7 +3,7 @@ import wrapper from "../middlewares/asyncWrapper.middleware.ts";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 
-import IdModel from "../model/id.ts";
+import AccountModel from "../model/account.ts";
 import Mailer from "../config/mail.ts";
 import type { propriety } from "../global/types.ts";
 import AccountZodObject from "../global/zod.validation.object.ts";
@@ -33,7 +33,7 @@ const register = wrapper(
     }
 
     const salt: number = 10;
-    const hashedPassword: Promise<string> & void = await bcrypt.hash(
+    const hashedPassword: string = await bcrypt.hash(
       password !== undefined ? password : "",
       salt,
     );
@@ -49,7 +49,7 @@ const register = wrapper(
       verificationExpiry: expiry,
     };
 
-    const newUser = new IdModel(user);
+    const newUser = new AccountModel(user);
 
     await newUser.save();
 
@@ -59,6 +59,49 @@ const register = wrapper(
     return res.status(201).json({
       status: 201,
       message: "New verification code sent to email",
+    });
+  },
+);
+
+const verifyAccount = wrapper(
+  async (req: Request, res: Response): Promise<Response> => {
+    const { code }: { code: string } = req.body;
+
+    const account = await AccountModel.findOne(
+      { verificationCode: code },
+      { __v: false, password: false },
+    );
+
+    if (!account) {
+      logger.error({ message: "Invalid verification", invalidCode: code });
+      return res.status(400).json({
+        status: 400,
+        message: "",
+      });
+    }
+
+    if (
+      account.verificationExpiry &&
+      account.verificationExpiry < new Date(Date.now())
+    ) {
+      logger.error("Verification code expired");
+      return res.status(400).json({
+        status: 400,
+        message: "Verification code expired",
+      });
+    }
+
+    account.verificationCode = null;
+    account.verificationExpiry = null;
+    account.isVerified = true;
+
+    await account.save();
+
+    logger.info({ message: "User verified", account: account.email });
+
+    return res.status(200).json({
+      status: 200,
+      message: "Verification successful",
     });
   },
 );
