@@ -68,6 +68,45 @@ const register = wrapper(
   },
 );
 
+const resendVerificationCode = wrapper(
+  async (req: Request, res: Response): Promise<void> => {
+    const { email }: { email: string | undefined } = req.body;
+
+    const emailVerificationObject = AccountZodObject.pick({ email: true });
+    const result = emailVerificationObject.safeParse(req.body);
+
+    if (!result.success) {
+      logger.error(z.prettifyError(result.error));
+
+      return res.status(400).json({
+        status: 400,
+        message: z.prettifyError(result.error).fieldErrors,
+      });
+    }
+
+    const account = await AccountModel.findOne(
+      { email },
+      { __v: false, password: false },
+    );
+
+    const code: number = crypto.randomInt(100000, 999999);
+    const expiry: Date = new Date(Date.now() + 10 * 60 * 1000);
+
+    account.verificationCode = code;
+    account.verificationExpiry = expiry;
+
+    await account.save();
+
+    const mailer: Mailer = new Mailer();
+    await mailer.sendVerificationMail(email !== undefined ? email : "", code);
+
+    return res.status(200).json({
+      status: 200,
+      message: "New verification code sent to email",
+    });
+  },
+);
+
 const verifyAccount = wrapper(
   async (req: Request, res: Response): Promise<Response> => {
     const { code }: { code: string } = req.body;
@@ -199,4 +238,4 @@ const login = wrapper(
   },
 );
 
-export { register, verifyAccount, login };
+export { register, verifyAccount, resendVerificationCode, login };
