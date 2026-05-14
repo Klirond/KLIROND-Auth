@@ -89,6 +89,24 @@ const resendVerificationCode = wrapper(
       { __v: false, password: false },
     );
 
+    if (!account) {
+      logger.error({ message: "Account not found", account: email });
+
+      return res.status(404).json({
+        status: 404,
+        message: "Account not found",
+      });
+    }
+
+    if (account.isVerified) {
+      logger.warn({ message: "Account already verified", account: email });
+
+      return res.status(400).json({
+        status: 400,
+        message: "Account already verified",
+      });
+    }
+
     const code: number = crypto.randomInt(100000, 999999);
     const expiry: Date = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -120,7 +138,7 @@ const verifyAccount = wrapper(
       logger.error({ message: "Invalid verification", invalidCode: code });
       return res.status(400).json({
         status: 400,
-        message: "",
+        message: "Invalid verification code",
       });
     }
 
