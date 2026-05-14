@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import type { Express } from "express";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 
 import connect from "./config/db.ts";
@@ -14,6 +15,7 @@ const app: Express = express();
 
 app.use(express.json());
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
