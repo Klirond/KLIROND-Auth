@@ -312,12 +312,12 @@ const logout = wrapper(
 
     for (let i: number = 0; i < account.refreshToken.length; i++) {
       let current: {
-        token: string;
-        expiry: Date;
+        token?: string | null | undefined;
+        expiry?: NativeDate | null | undefined;
       } = account.refreshToken[i];
 
       if (current.token === refreshToken) {
-        if (current.expiy < new Date(Date.now())) {
+        if (current.expiry && current.expiry < new Date(Date.now())) {
           logger.warn({
             message: "Session id already expired",
             account: account.email,
