@@ -19,6 +19,8 @@ import {
 } from "../middlewares/constollers.error.handlers.ts";
 import type { safeParseResult } from "../global/types.ts";
 
+const mailer: Mailer = new Mailer();
+
 const register = wrapper(
   async (req: Request, res: Response): Promise<Response> => {
     const result: safeParseResult<{
@@ -60,7 +62,6 @@ const register = wrapper(
 
     await newUser.save();
 
-    const mailer: Mailer = new Mailer();
     await mailer.sendVerificationMail(email !== undefined ? email : "", code);
 
     return res.status(201).json({
@@ -104,7 +105,6 @@ const resendVerificationCode = wrapper(
 
     await account.save();
 
-    const mailer: Mailer = new Mailer();
     await mailer.sendVerificationMail(email !== undefined ? email : "", code);
 
     return res.status(200).json({
@@ -157,7 +157,6 @@ const verifyAccount = wrapper(
 
     logger.info({ message: "User verified", account: account.email });
 
-    const mailer: Mailer = new Mailer();
     await mailer.sendWelcomeEmail(account.email, account.username);
 
     return res.status(200).json({
@@ -338,7 +337,6 @@ const logoutAllRequest = wrapper(
     account.verificationExpiry = expiry;
     await account.save();
 
-    const mailer: Mailer = new Mailer();
     await mailer.sendLogoutAllVerificationMail(account.email, code);
 
     return res.status(200).json({
@@ -515,7 +513,6 @@ const forgotPassword = wrapper(
     account.resetExpiry = expiry;
     await account.save();
 
-    const mailer: Mailer = new Mailer();
     mailer.sendResetPasswordMail(email, code);
 
     return res.status(200).json({
@@ -706,7 +703,6 @@ const deleteAccountRequest = wrapper(
     account.deleteAccountExpiry = expiry;
     await account.save();
 
-    const mailer: Mailer = new Mailer();
     await mailer.sendDeleteAccountRequestMail(account.email, code);
 
     return res.status(200).json({
