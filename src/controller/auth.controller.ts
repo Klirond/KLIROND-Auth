@@ -745,5 +745,6 @@ export {
   forgotPassword,
   resetPasswordToken,
   resetPassword,
+  deleteAccountRequest,
   me,
 };
