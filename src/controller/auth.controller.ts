@@ -13,6 +13,7 @@ import AccountZodObject from "../global/zod.validation.object.ts";
 import logger from "../middlewares/logger.ts";
 import {
   accountNotFoundHandler,
+  accountNotVerified,
   validationErrorHandler,
 } from "../middlewares/constollers.error.handlers.ts";
 
@@ -172,14 +173,7 @@ const login = wrapper(
 
     if (!account) return accountNotFoundHandler(res, { email });
 
-    if (!account.isVerified) {
-      logger.warn({ message: "Account is not verified", account: email });
-
-      return res.status(401).json({
-        status: 401,
-        message: "Account is not verified",
-      });
-    }
+    if (!account.isVerified) return accountNotVerified(res, email);
 
     const correctPassword: boolean = await bcrypt.compare(
       password ?? "",
@@ -246,6 +240,8 @@ const logout = wrapper(
 
     if (!account) return accountNotFoundHandler(res, { token: refreshToken });
 
+    if (!account.isVerified) return accountNotVerified(res, email);
+
     for (let i: number = 0; i < account.refreshToken.length; i++) {
       let current: {
         token?: string | null | undefined;
@@ -301,6 +297,8 @@ const logoutAllRequest = wrapper(
     );
 
     if (!account) return accountNotFoundHandler(res, { token: refreshToken });
+
+    if (!account.isVerified) return accountNotVerified(res, email);
 
     for (let i: number = 0; i < account.refreshToken.length; i++) {
       let current: {
@@ -363,6 +361,8 @@ const logoutAll = wrapper(
 
     if (!account) return accountNotFoundHandler(res, { code });
 
+    if (!account.isVerified) return accountNotVerified(res, email);
+
     if (
       account.verificationExpiry &&
       account.verificationExpiry < new Date(Date.now())
@@ -416,6 +416,8 @@ const refresh = wrapper(
     );
 
     if (!account) return accountNotFoundHandler(res, { token });
+
+    if (!account.isVerified) return accountNotVerified(res, email);
 
     for (let i: number = 0; i < account.refreshToken.length; i++) {
       const current: {
@@ -494,6 +496,8 @@ const forgotPassword = wrapper(
 
     if (!account) return accountNotFoundHandler(res, { email });
 
+    if (!account.isVerified) return accountNotVerified(res, email);
+
     const code: number = crypto.randomInt(100000, 999999);
     const expiry: Date = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -531,6 +535,8 @@ const resetPasswordToken = wrapper(
     );
 
     if (!account) return accountNotFoundHandler(res, { code });
+
+    if (!account.isVerified) return accountNotVerified(res, email);
 
     if (account.resetExpiry && account.resetExpiry < new Date(Date.now())) {
       logger.warn({
@@ -605,6 +611,8 @@ const resetPassword = wrapper(
 
     if (!account) return accountNotFoundHandler(res, { token: resetCookie });
 
+    if (!account.isVerified) return accountNotVerified(res, email);
+
     if (account.resetExpiry && account.resetExpiry < new Date(Date.now())) {
       logger.warn({ message: "Reset token expired", account: account.email });
 
@@ -672,6 +680,8 @@ const me = wrapper(async (req: Request, res: Response): Promise<Response> => {
   );
 
   if (!account) return accountNotFoundHandler(res, { token: accessToken });
+
+  if (!account.isVerified) return accountNotVerified(res, email);
 
   const accountData: {
     username: string;

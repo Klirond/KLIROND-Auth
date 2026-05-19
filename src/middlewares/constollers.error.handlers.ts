@@ -69,4 +69,13 @@ const accountNotFoundHandler = (
   });
 };
 
-export { validationErrorHandler, accountNotFoundHandler };
+const accountNotVerified = (res: Response, email: string): Response => {
+  logger.warn({ message: "Account is not verified", account: email });
+
+  return res.status(401).json({
+    status: 401,
+    message: "Account is not verified",
+  });
+};
+
+export { validationErrorHandler, accountNotFoundHandler, accountNotVerified };
