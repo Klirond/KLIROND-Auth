@@ -162,6 +162,8 @@ class Mailer implements MailerType {
         subject: "Account deleted",
         html: /* html */ `Your account has been deleted ${username}`,
       });
+
+      logger.info(`Email sent [ ${mail.messageId} ]`);
     } catch (err: unknown) {
       mailerError(err);
     }
