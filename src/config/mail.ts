@@ -135,6 +135,21 @@ class Mailer implements MailerType {
       mailerError(err);
     }
   }
+
+  public async sendPasswrodChangedMail(email: string): Promise<void> {
+    try {
+      const mail = await this.transporter.sendMail({
+        from: this.mail,
+        to: email,
+        subject: "Password changed successfully",
+        html: /* html */ `Password changed`,
+      });
+
+      logger.info(`Email sent [ ${mail.messageId} ]`);
+    } catch (err: unknown) {
+      mailerError(err);
+    }
+  }
 }
 
 export default Mailer;

@@ -661,6 +661,8 @@ const resetPassword = wrapper(
       account: account.email,
     });
 
+    mailer.sendPasswrodChangedMail(account.email);
+
     return res.status(200).json({
       status: 200,
       message: "Password reset successfully",
