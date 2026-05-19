@@ -3,7 +3,6 @@ import wrapper from "../middlewares/asyncWrapper.middleware.ts";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import type { JwtPayload } from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import * as z from "zod";
 import "dotenv/config";
@@ -71,14 +70,14 @@ const resendVerificationCode = wrapper(
 
     if (!result.success) return validationErrorHandler(res, result);
 
-    const { email }: { email: string } = result.data;
+    const email: string = result.data.email;
 
     const account = await AccountModel.findOne(
       { email },
       { __v: false, password: false },
     );
 
-    if (!account) return accountNotFoundHandler(res, email);
+    if (!account) return accountNotFoundHandler(res, { email });
 
     if (account.isVerified) {
       logger.warn({ message: "Account already verified", account: email });
@@ -109,23 +108,24 @@ const resendVerificationCode = wrapper(
 
 const verifyAccount = wrapper(
   async (req: Request, res: Response): Promise<Response> => {
-    if (!req.body) {
-      logger.warn("Body is undefined");
+    const codeValidation = z.object({
+      code: z.coerce
+        .number("Invalid verification code")
+        .min(6, "Verification code too short"),
+    });
 
-      return res.status(400).json({
-        status: 400,
-        message: "Body is undefined",
-      });
-    }
+    const result = codeValidation.safeParse(req.body);
 
-    const { code }: { code: number } = req.body;
+    if (!result.success) return validationErrorHandler(res, result);
+
+    const code: number = result.data.code;
 
     const account = await AccountModel.findOne(
       { verificationCode: code },
       { __v: false, password: false },
     );
 
-    if (!account) return accountNotFoundHandler(res, {});
+    if (!account) return accountNotFoundHandler(res, { code });
 
     if (
       account.verificationExpiry &&
