@@ -586,7 +586,7 @@ const resetPasswordToken = wrapper(
     account.resetExpiry = new Date(Date.now() + 1 * 60 * 60 * 1000);
     await account.save();
 
-    res.cookie("Password-Reset-UUID", resetCookie, {
+    res.cookie("PasswordResetUUID", resetCookie, {
       httpOnly: true,
       secure: false,
       sameSite: "none",
@@ -609,7 +609,7 @@ const resetPassword = wrapper(
 
     const result: safeParseResult<{ token: string }> =
       cookieValidation.safeParse({
-        token: req.cookies["Password-Reset-UUID"],
+        token: req.cookies["PasswordResetUUID"],
       });
 
     if (!result.success) return validationErrorHandler(res, result);
@@ -665,7 +665,7 @@ const resetPassword = wrapper(
 
     mailer.sendPasswrodChangedMail(account.email);
 
-    res.clearCookie("Password-Reset-UUID", {
+    res.clearCookie("PasswordResetUUID", {
       path: "/"
     })
 
