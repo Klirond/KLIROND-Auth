@@ -45,7 +45,7 @@ class Mailer implements MailerType {
 
           <h2 style="color: #E3CC9F; font-size: 36px;">Sign In to your account.</h2>
 
-          <a href="${process.env.FRONTEND_URL}/verify?token=${code}" style="padding: 14px 20px; font-size: 16px; border-radius: 16px; font-weight: bold; background: #BA8B57; color: white; text-decoration: none;">Sign In</a>
+          <a href="${process.env.FRONTEND_URL}/confirmation?code=${code}" style="padding: 14px 20px; font-size: 16px; border-radius: 16px; font-weight: bold; background: #BA8B57; color: white; text-decoration: none;">Sign In</a>
 
           <p style="font-weight: 500; text-align: center;">Click on the button above for quick verification. If it doesnt work use the provided code below:</p>
 
@@ -91,7 +91,7 @@ class Mailer implements MailerType {
         from: this.mail,
         to: email,
         subject: "Password reset",
-        html: /* html */ `Reset code: ${code}`,
+        html: /* html */ `${code}`,
       });
 
       logger.info(`Email sent [ ${mail.messageId} ]`);
