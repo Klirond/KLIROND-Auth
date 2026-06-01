@@ -119,7 +119,7 @@ const verifyAccount = wrapper(
     const codeValidation = z.object({
       code: z.coerce
         .number("Invalid verification code")
-        .min(6, "Verification code too short")
+        .min(6, "Verification code too short"),
     });
 
     const result: safeParseResult<{ code: number }> = codeValidation.safeParse(
@@ -591,7 +591,7 @@ const resetPasswordToken = wrapper(
       secure: false,
       sameSite: "none",
       path: "/",
-      maxAge: 10 * 60 * 1000
+      maxAge: 10 * 60 * 1000,
     });
 
     return res.status(200).json({
@@ -604,7 +604,9 @@ const resetPasswordToken = wrapper(
 const resetPassword = wrapper(
   async (req: Request, res: Response): Promise<Response> => {
     const cookieValidation = z.object({
-      token: z.uuidv4("An error occured while processing your request. Please retry getting a new reset link"),
+      token: z.uuidv4(
+        "An error occured while processing your request. Please retry getting a new reset link",
+      ),
     });
 
     const result: safeParseResult<{ token: string }> =
@@ -666,12 +668,52 @@ const resetPassword = wrapper(
     mailer.sendPasswrodChangedMail(account.email);
 
     res.clearCookie("PasswordResetUUID", {
-      path: "/"
-    })
+      path: "/",
+    });
 
     return res.status(200).json({
       status: 200,
       message: "Password reset successfully",
+    });
+  },
+);
+
+const cancelReset = wrapper(
+  async (req: Request, res: Response): Promise<Response> => {
+    const tokenValidation = z.object({
+      token: z.uuidv4("An error occured while processing your request."),
+    });
+
+    const result: safeParseResult<{ token: string }> =
+      tokenValidation.safeParse({
+        token: req.cookies["PasswordResetUUID"],
+      });
+
+    if (!result.success) return validationErrorHandler(res, result);
+
+    const token = result.data.token;
+
+    const account = await AccountModel.findOne(
+      { resetToken: token },
+      { __v: false, password: false },
+    );
+
+    if (!account) return accountNotFoundHandler(res, { token });
+
+    if (!account.isVerified) return accountNotVerified(res, account.email);
+
+    account.resetToken = null;
+    account.resetExpiry = null;
+
+    await account.save();
+
+    res.clearCookie("PasswordResetUUID", {
+      path: "/",
+    });
+
+    return res.status(200).json({
+      status: 200,
+      message: "Operation canceled",
     });
   },
 );
@@ -832,6 +874,7 @@ export {
   forgotPassword,
   resetPasswordToken,
   resetPassword,
+  cancelReset,
   deleteAccountRequest,
   deleteAccount,
   me,
