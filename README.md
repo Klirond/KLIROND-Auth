@@ -348,7 +348,7 @@ All the endpoints of this API are under the `/auth` route.
 - Clears cookie: `PasswordResetUUID`
 
 ### 12) `/cancel-reset`
-- This waits for `PasswordResetUUID` cookie
+- This waits for the `PasswordResetUUID` cookie
 - Responses:
   - Token expired:
 ```json
@@ -420,7 +420,7 @@ All the endpoints of this API are under the `/auth` route.
 ## GET
 
 ### 15) `/me`
-- This waits for `Authorization: Bearer <token>` header
+- This waits for the `Authorization: Bearer <token>` header
 - Responses:
   - Invalid token:
 ```json
@@ -440,3 +440,35 @@ All the endpoints of this API are under the `/auth` route.
   }
 }
 ```
+
+# Availability
+
+Our API is only available to dev servers (localhost => 127.0.0.1) and our own domains that will be added in the future.
+
+This is achieved with the CORS policy that we are using.
+
+# Hosting
+
+Our Auth API will be hosted on [render](https://render.com)
+
+# Data
+
+All users' data is saved securely in MongoDB databases.
+
+All passwords are hashed and securely stored.
+
+# Contributing
+
+All contributions are welcome!
+
+Just:
+
+- Make sure to open a PR that is well documented and that solves one, and ONLY one, specific issue, either from an existing open issue or an issue that you opened.
+- PRs with multiple fixes from different unrelated parts will be declined.
+- Unclear PR documentation will automatically make the PR declined.
+- Shady code is unacceptable, and we will decline the PR.
+- Make sure to document the code and add comments, not too many, not too few.
+
+# License
+
+Licensed under the `Apache-2.0 license`. Zetavex © 2026. All rights reserved.
