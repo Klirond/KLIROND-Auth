@@ -1,6 +1,6 @@
 <div align="center">
   <a href="">
-    <img src="https://assets.zetavex.workers.dev/Zetavex%20full%20logo.svg" alt="Zetavex logo" width="500" />
+    <img src="https://assets.klirond.workers.dev/primary-full-logo-dark-bg.svg" alt="KLIROND logo" width="500" />
   </a>
 </div>
 
@@ -25,7 +25,7 @@
   
 </div>
 
-Auth api verification for Zetavex accounts.
+Auth api verification for KLIROND accounts.
 
 Made Free and Open-source to build trust between us and our users!
 
