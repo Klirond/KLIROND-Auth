@@ -202,18 +202,24 @@ const login = wrapper(
       { expiresIn: "30m" },
     );
 
+    const refreshCookie = uuidv4();
+
     const refreshTokenObj: { token: string; expiry: Date } = {
-      token: uuidv4(),
+      token: refreshCookie,
       expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     };
 
     account.refreshToken.push(refreshTokenObj);
     await account.save();
 
-    res.cookie("Refresh-Token-Id", refreshTokenObj.token, {
+    const isProd = ENV === "prod";
+
+    res.cookie("SessionId", refreshCookie, {
       httpOnly: true,
-      secure: ENV === "prod",
-      sameSite: ENV === "prod" ? "none" : "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
@@ -226,8 +232,7 @@ const login = wrapper(
 
 const logout = wrapper(
   async (req: Request, res: Response): Promise<Response> => {
-    const refreshToken =
-      req.cookies !== null ? req.cookies["Refresh-Token-Id"] : null;
+    const refreshToken = req.cookies !== null ? req.cookies["SessionId"] : null;
 
     const uuidValidation = z.object({
       token: z.uuidv4("Invalid refresh token"),
@@ -291,7 +296,7 @@ const logoutAllRequest = wrapper(
 
     const result: safeParseResult<{ token: string }> =
       refreshTokenValidation.safeParse({
-        token: req.cookies["Refresh-Token-Id"],
+        token: req.cookies["SessionId"],
       });
 
     if (!result.success) return validationErrorHandler(res, result);
@@ -412,7 +417,7 @@ const refresh = wrapper(
 
     const result: safeParseResult<{ token: string }> =
       cookieValidation.safeParse({
-        token: req.cookies["Refresh-Token-Id"],
+        token: req.cookies["SessionId"],
       });
 
     if (!result.success) return validationErrorHandler(res, result);
@@ -472,10 +477,14 @@ const refresh = wrapper(
     account.refreshToken.push(newRefreshTokenObj);
     await account.save();
 
-    res.cookie("Refresh-Token-Id", newRefreshTokenObj.token, {
+    const isProd = ENV === "prod";
+
+    res.cookie("SessionId", newRefreshTokenObj.token, {
       httpOnly: true,
-      secure: ENV === "prod",
-      sameSite: ENV === "prod" ? "none" : "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
@@ -588,10 +597,12 @@ const resetPasswordToken = wrapper(
     account.resetExpiry = new Date(Date.now() + 1 * 60 * 60 * 1000);
     await account.save();
 
+    const isProd = ENV === "prod";
+
     res.cookie("PasswordResetUUID", resetCookie, {
       httpOnly: true,
-      secure: ENV === "prod",
-      sameSite: ENV === "prod" ? "none" : "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
       path: "/",
       maxAge: 10 * 60 * 1000,
     });
@@ -847,12 +858,9 @@ const me = wrapper(async (req: Request, res: Response): Promise<Response> => {
 
   const accessToken: string = result.data.token;
 
-  const decoded: string = String(
-    jwt.verify(accessToken, process.env.JWT_SECRET ?? ""),
-  );
-  const obj: { email: string } = JSON.parse(decoded);
+  const decoded: any = jwt.verify(accessToken, process.env.JWT_SECRET ?? "");
 
-  const email: string = obj.email;
+  const email: string = decoded.email;
 
   const account = await AccountModel.findOne(
     { email },
